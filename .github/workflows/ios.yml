@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-ios:
-    runs-on: macos-14  # Xcode 15
+    runs-on: macos-15  # Sonoma runner with Xcode 16
 
     steps:
       - name: 🔽 Checkout
@@ -17,10 +17,12 @@ jobs:
           channel: stable
           architecture: x64
 
-      - name: 📦 Show Flutter version
-        run: flutter --version
+      - name: 🧰 Select Xcode 16
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16'
 
-      - name: 📦 Precache iOS engine
+      - name: 📦 Precache iOS
         run: flutter --suppress-analytics precache --ios
 
       - name: 📦 Pub get
@@ -33,13 +35,6 @@ jobs:
           flutter pub get
           cd ios && pod repo update && pod install && cd ..
 
-      - name: 🔍 Sanity check Podfile + lock
-        run: |
-          echo "== Podfile (first 140 lines) =="
-          sed -n '1,140p' ios/Podfile || true
-          echo "== Podfile.lock (first 200 lines, after install) =="
-          sed -n '1,200p' ios/Podfile.lock || true
-
       - name: 🏗️ Build iOS (no codesign)
         run: flutter build ios --release --no-codesign
 
@@ -50,7 +45,6 @@ jobs:
           zip -qq -r -9 FlutterIpaExport.ipa Payload
         working-directory: build/ios/iphoneos
 
-      # Easy download from the Actions run page
       - name: 📎 Upload IPA as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -58,14 +52,3 @@ jobs:
           path: build/ios/iphoneos/FlutterIpaExport.ipa
           if-no-files-found: error
           retention-days: 7
-
-      # Optional: also publish a GitHub Release with an auto tag
-      - name: 📤 Upload IPA to GitHub Release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/ios/iphoneos/FlutterIpaExport.ipa
-          tag: build-${{ github.run_number }}           # auto tag per run
-          release_name: "iOS Build ${{ github.run_number }}"
-          overwrite: true
-          body: "iOS IPA (no code signing)"
