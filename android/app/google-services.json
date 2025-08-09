@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "391214412743",
+    "project_id": "doctor-phone-e1bc7",
+    "storage_bucket": "doctor-phone-e1bc7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:391214412743:android:ef993c76ff0b3359399fe2",
+        "android_client_info": {
+          "package_name": "com.example.adminpanelapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPT8v8HAy3mQDaeS4Og6yEd2nBa8ULprU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
