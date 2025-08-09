@@ -29,16 +29,23 @@ target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
+  # ✅ Force Firebase SDK to a Swift 5–compatible version
+  $FirebaseSDKVersion = '11.9.0'
+  pod 'Firebase/Core', $FirebaseSDKVersion
+  pod 'FirebaseFirestore', $FirebaseSDKVersion
+  pod 'FirebaseAuth', $FirebaseSDKVersion
+  pod 'FirebaseStorage', $FirebaseSDKVersion
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 
 post_install do |installer|
-  # ✅ Correct Flutter call — loop over each target
+  # Call Flutter helper per-target (required)
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
   end
 
-  # ✅ Make sure build settings are consistent
+  # Optional: keep settings consistent on CI
   installer.pods_project.targets.each do |t|
     t.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
@@ -46,8 +53,9 @@ post_install do |installer|
     end
   end
 
-  # ✅ Avoid arm64 simulator issues on Intel Macs
+  # Optional: avoid simulator arm64 headaches on Intel Macs
   installer.pods_project.build_configurations.each do |config|
     config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
   end
 end
+
