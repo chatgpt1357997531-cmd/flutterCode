@@ -9,6 +9,11 @@ class EditAndDeleteScreen extends StatefulWidget {
 }
 
 class _EditAndDeleteScreenState extends State<EditAndDeleteScreen> {
+  // Theme colors (match AdminHomeScreen)
+  static const Color kBlue = Color(0xFF1565C0);
+  static const Color kBlueLight = Color(0xFFE3F2FD);
+  static const Color kSurface = Color(0xFFFDFEFF);
+
   final List<String> _brands = ['apple', 'samsung', 'xiaomi', 'poco', 'realme', 'infinix'];
   String _selectedBrand = 'apple';
   final parts = ['screen', 'battery', 'front_camera', 'ear_speaker'];
@@ -41,37 +46,57 @@ class _EditAndDeleteScreenState extends State<EditAndDeleteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F8E9),
-      appBar: AppBar(
-        title: const Text("Manage Cards"),
-        backgroundColor:  Colors.white,
-      ),
+      // Let the parent AppBar (from AdminHomeScreen) show; keep this page clean
+      backgroundColor: kSurface,
       body: Column(
         children: [
+          // Brand selector
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: DropdownButtonFormField<String>(
               value: _selectedBrand,
               decoration: InputDecoration(
-                labelText: "\n\nSelect Brand\n\n\n",
+                labelText: "Select Brand",
+                labelStyle: const TextStyle(color: kBlue, fontWeight: FontWeight.w600),
                 filled: true,
-                fillColor:  Color(0xFFC5E1A5),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: kBlueLight),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: kBlue, width: 1.5),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               ),
               dropdownColor: Colors.white,
+              iconEnabledColor: kBlue,
               onChanged: (value) => setState(() => _selectedBrand = value!),
-              items: _brands.map((b) => DropdownMenuItem(value: b, child: Text(b.toUpperCase()))).toList(),
+              items: _brands
+                  .map((b) => DropdownMenuItem(
+                        value: b,
+                        child: Text(b.toUpperCase(), style: const TextStyle(color: kBlue, fontWeight: FontWeight.w600)),
+                      ))
+                  .toList(),
             ),
           ),
+
+          // List of cards
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection(_selectedBrand).snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
                 final docs = snapshot.data!.docs;
 
                 if (docs.isEmpty) {
-                  return const Center(child: Text("No cards found"));
+                  return const Center(
+                    child: Text("No cards found", style: TextStyle(color: Colors.black54)),
+                  );
                 }
 
                 return ListView.builder(
@@ -81,10 +106,12 @@ class _EditAndDeleteScreenState extends State<EditAndDeleteScreen> {
                     final data = docs[index].data() as Map<String, dynamic>;
                     final docId = docs[index].id;
 
-                    return Card(
-                      elevation: 5,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      color: const Color(0xFFE8F5E9),
+                    return Card
+                    (
+                      elevation: 6,
+                      shadowColor: kBlue.withOpacity(0.15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      color: Colors.white,
                       margin: const EdgeInsets.symmetric(vertical: 10),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -101,30 +128,51 @@ class _EditAndDeleteScreenState extends State<EditAndDeleteScreen> {
                                   fit: BoxFit.cover,
                                 ),
                               ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 12),
                             Text(
                               data['title'] ?? "",
-                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF33691E)),
+                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: kBlue),
                             ),
-                            Text(
-                              data['description'] ?? "",
-                              style: const TextStyle(fontSize: 14, color: Colors.black87),
-                            ),
-                            const Divider(height: 20, color: Colors.black26),
+                            if ((data['description'] ?? '').toString().isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text(
+                                  data['description'],
+                                  style: const TextStyle(fontSize: 14, color: Colors.black87),
+                                ),
+                              ),
+                            const SizedBox(height: 12),
+                            Divider(height: 20, color: kBlueLight.withOpacity(0.9), thickness: 1),
+
+                            // Prices editor for selected parts
                             ...parts.map((part) {
                               final priceMap = (data['prices'] ?? {})[part] ?? <String, dynamic>{};
+                              if (priceMap.isEmpty) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                  child: Text("🛠 $part — no variants yet",
+                                      style: const TextStyle(color: Colors.black54)),
+                                );
+                              }
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("🛠 $part", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
-                                  const SizedBox(height: 4),
+                                  Text("🛠 $part",
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold, color: kBlue, fontSize: 15)),
+                                  const SizedBox(height: 6),
                                   ...priceMap.entries.map((entry) {
                                     final controller = TextEditingController(text: entry.value.toString());
                                     return Padding(
                                       padding: const EdgeInsets.symmetric(vertical: 6),
                                       child: Row(
                                         children: [
-                                          Expanded(flex: 2, child: Text("${entry.key}:", style: TextStyle(color: Colors.teal))),
+                                          Expanded(
+                                            flex: 2,
+                                            child: Text("${entry.key}:",
+                                                style: const TextStyle(
+                                                    color: kBlue, fontWeight: FontWeight.w600)),
+                                          ),
                                           const SizedBox(width: 10),
                                           Expanded(
                                             flex: 3,
@@ -133,22 +181,35 @@ class _EditAndDeleteScreenState extends State<EditAndDeleteScreen> {
                                               keyboardType: TextInputType.number,
                                               decoration: InputDecoration(
                                                 filled: true,
-                                                fillColor: Colors.white,
-                                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                                fillColor: kSurface,
+                                                border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(10)),
+                                                enabledBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                  borderSide: const BorderSide(color: kBlueLight),
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                  borderSide:
+                                                      const BorderSide(color: kBlue, width: 1.5),
+                                                ),
                                                 isDense: true,
-                                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                                contentPadding: const EdgeInsets.symmetric(
+                                                    horizontal: 10, vertical: 10),
                                               ),
-                                              onSubmitted: (newVal) => _updatePrice(docId, part, entry.key, newVal),
+                                              onSubmitted: (newVal) =>
+                                                  _updatePrice(docId, part, entry.key, newVal),
                                             ),
                                           ),
                                         ],
                                       ),
                                     );
                                   }),
-                                  const SizedBox(height: 10),
+                                  const SizedBox(height: 6),
                                 ],
                               );
                             }),
+
                             const SizedBox(height: 10),
                             Align(
                               alignment: Alignment.centerRight,
@@ -157,8 +218,13 @@ class _EditAndDeleteScreenState extends State<EditAndDeleteScreen> {
                                 icon: const Icon(Icons.delete),
                                 label: const Text("Delete"),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red.shade400,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  backgroundColor: Colors.red.shade500,
+                                  foregroundColor: Colors.white,
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                  elevation: 2,
                                 ),
                               ),
                             )

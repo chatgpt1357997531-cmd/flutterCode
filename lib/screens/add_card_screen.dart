@@ -20,6 +20,10 @@ class _AddCardScreenState extends State<AddCardScreen> {
   final _picker = ImagePicker();
   bool _isLoading = false;
 
+  // Theme colors from AdminHomeScreen
+  static const Color kBlue = Color(0xFF1565C0);
+  static const Color kSurface = Color(0xFFFDFEFF);
+
   Future<void> _pickImage() async {
     final picked = await _picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
@@ -80,14 +84,17 @@ class _AddCardScreenState extends State<AddCardScreen> {
       padding: const EdgeInsets.all(20),
       child: Card(
         elevation: 8,
-        color: Colors.blueGrey[50],
+        color: kBlue,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Select Brand", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.teal)),
+              const Text(
+                "Select Brand",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSurface),
+              ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: _selectedBrand,
@@ -100,7 +107,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                 items: _brands
                     .map((brand) => DropdownMenuItem(
                           value: brand,
-                          child: Text(brand.toUpperCase(), style: const TextStyle(color: Colors.deepPurple)),
+                          child: Text(brand.toUpperCase(), style: const TextStyle(color: kBlue)),
                         ))
                     .toList(),
               ),
@@ -109,6 +116,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                 controller: _titleController,
                 decoration: InputDecoration(
                   labelText: "Phone Title",
+                  labelStyle: const TextStyle(color: kBlue),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   filled: true,
                   fillColor: Colors.white,
@@ -119,6 +127,7 @@ class _AddCardScreenState extends State<AddCardScreen> {
                 controller: _descController,
                 decoration: InputDecoration(
                   labelText: "Description (optional)",
+                  labelStyle: const TextStyle(color: kBlue),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   filled: true,
                   fillColor: Colors.white,
@@ -131,11 +140,11 @@ class _AddCardScreenState extends State<AddCardScreen> {
                       borderRadius: BorderRadius.circular(12),
                       child: Image.file(_imageFile!, height: 150),
                     )
-                  : const Text("No image selected", style: TextStyle(color: Colors.grey)),
+                  : const Text("No image selected", style: TextStyle(color: Color.fromARGB(255, 255, 255, 255))),
               TextButton.icon(
                 onPressed: _pickImage,
-                icon: const Icon(Icons.image, color: Colors.teal),
-                label: const Text("Pick Image", style: TextStyle(color: Color(0xFF558B2F))),
+                icon: const Icon(Icons.image, color: Color.fromARGB(255, 255, 255, 255)),
+                label: const Text("Pick Image", style: TextStyle(color: Color.fromARGB(255, 254, 255, 255))),
               ),
               const SizedBox(height: 20),
               SizedBox(
@@ -149,8 +158,8 @@ class _AddCardScreenState extends State<AddCardScreen> {
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    backgroundColor: Colors.teal,
-                    foregroundColor: Colors.white,
+                    backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                    foregroundColor: kBlue,
                   ),
                 ),
               )
