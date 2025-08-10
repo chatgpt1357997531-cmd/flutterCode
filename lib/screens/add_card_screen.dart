@@ -49,8 +49,8 @@ class _AddCardScreenState extends State<AddCardScreen> {
       final mimeType = (ext == 'jpg' || ext == 'jpeg')
           ? 'image/jpeg'
           : (ext == 'png')
-              ? 'image/png'
-              : 'image/*';
+          ? 'image/png'
+          : 'image/*';
       final base64Image = "data:$mimeType;base64,${base64Encode(bytes)}";
 
       await FirebaseFirestore.instance.collection(_selectedBrand).add({
@@ -59,9 +59,9 @@ class _AddCardScreenState extends State<AddCardScreen> {
         'imagePath': base64Image,
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Card saved successfully!")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Card saved successfully!")));
 
       _titleController.clear();
       _descController.clear();
@@ -70,9 +70,9 @@ class _AddCardScreenState extends State<AddCardScreen> {
       });
     } catch (e) {
       print("🔥 Error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
 
     setState(() => _isLoading = false);
@@ -93,31 +93,46 @@ class _AddCardScreenState extends State<AddCardScreen> {
             children: [
               const Text(
                 "Select Brand",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: kSurface),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: kSurface,
+                ),
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: _selectedBrand,
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   filled: true,
                   fillColor: Colors.white,
                 ),
                 onChanged: (value) => setState(() => _selectedBrand = value!),
                 items: _brands
-                    .map((brand) => DropdownMenuItem(
-                          value: brand,
-                          child: Text(brand.toUpperCase(), style: const TextStyle(color: kBlue)),
-                        ))
+                    .map(
+                      (brand) => DropdownMenuItem(
+                        value: brand,
+                        child: Text(
+                          brand.toUpperCase(),
+                          style: const TextStyle(color: kBlue),
+                        ),
+                      ),
+                    )
                     .toList(),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _titleController,
                 decoration: InputDecoration(
-                  labelText: "Phone Title",
-                  labelStyle: const TextStyle(color: kBlue),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  hintText: "Phone Title",
+                  hintStyle: const TextStyle(
+                    color: Colors.grey,
+                  ), // style for placeholder
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   filled: true,
                   fillColor: Colors.white,
                 ),
@@ -126,25 +141,38 @@ class _AddCardScreenState extends State<AddCardScreen> {
               TextField(
                 controller: _descController,
                 decoration: InputDecoration(
-                  labelText: "Description (optional)",
-                  labelStyle: const TextStyle(color: kBlue),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  hintText: "Description (optional)",
+                  hintStyle: const TextStyle(color: Colors.grey),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   filled: true,
                   fillColor: Colors.white,
                 ),
-                maxLines: 2,
               ),
+
               const SizedBox(height: 16),
               _imageFile != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.file(_imageFile!, height: 150),
                     )
-                  : const Text("No image selected", style: TextStyle(color: Color.fromARGB(255, 255, 255, 255))),
+                  : const Text(
+                      "No image selected",
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 255, 255, 255),
+                      ),
+                    ),
               TextButton.icon(
                 onPressed: _pickImage,
-                icon: const Icon(Icons.image, color: Color.fromARGB(255, 255, 255, 255)),
-                label: const Text("Pick Image", style: TextStyle(color: Color.fromARGB(255, 254, 255, 255))),
+                icon: const Icon(
+                  Icons.image,
+                  color: Color.fromARGB(255, 255, 255, 255),
+                ),
+                label: const Text(
+                  "Pick Image",
+                  style: TextStyle(color: Color.fromARGB(255, 254, 255, 255)),
+                ),
               ),
               const SizedBox(height: 20),
               SizedBox(
@@ -153,16 +181,22 @@ class _AddCardScreenState extends State<AddCardScreen> {
                   onPressed: _isLoading ? null : _saveCard,
                   icon: const Icon(Icons.save),
                   label: _isLoading
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : const Text("Save Card"),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     backgroundColor: const Color.fromARGB(255, 255, 255, 255),
                     foregroundColor: kBlue,
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
