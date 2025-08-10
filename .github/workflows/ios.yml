@@ -1,31 +1,67 @@
-name: iOS-ipa-build
-on: { workflow_dispatch: {} }
+name: iOS IPA Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write   # needed to create releases
 
 jobs:
   build-ios:
-    runs-on: macos-15   # ✅ Sonoma image that has Xcode 16
+    runs-on: macos-15  # Sonoma image with Xcode 16 available
 
     steps:
-      - uses: actions/checkout@v3
+      - name: 🔽 Checkout
+        uses: actions/checkout@v3
 
-      - uses: subosito/flutter-action@v2
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: stable
           architecture: x64
 
-      - name: Select Xcode 16
+      - name: 🧰 Select Xcode 16
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16'   # picks latest 16.x
+          xcode-version: '16'
 
-      - run: flutter --suppress-analytics precache --ios
-      - run: flutter pub get
+      - name: 📦 Precache iOS engine
+        run: flutter --suppress-analytics precache --ios
 
-      - name: Clean & reinstall Pods
+      - name: 📦 Pub get
+        run: flutter pub get
+
+      - name: 🧹 Clean & reinstall CocoaPods (fresh)
         run: |
           rm -rf ios/Pods ios/Podfile.lock ios/.symlinks
           flutter clean
           flutter pub get
           cd ios && pod repo update && pod install && cd ..
 
-      - run: flutter build ios --release --no-codesign
+      - name: 🏗️ Build iOS (no codesign)
+        run: flutter build ios --release --no-codesign
+
+      - name: 📦 Make IPA
+        run: |
+          mkdir Payload
+          mv Runner.app Payload
+          zip -qq -r -9 FlutterIpaExport.ipa Payload
+        working-directory: build/ios/iphoneos
+
+      - name: 📎 Upload IPA as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlutterIpaExport
+          path: build/ios/iphoneos/FlutterIpaExport.ipa
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: 🏷️ Create GitHub Release and upload IPA
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}         # auto tag per run
+          name: "iOS Build ${{ github.run_number }}"
+          body: "iOS IPA (no code signing)"
+          files: build/ios/iphoneos/FlutterIpaExport.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
