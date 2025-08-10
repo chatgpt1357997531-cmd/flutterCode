@@ -1,50 +1,31 @@
-name: iOS IPA Build
-
-on:
-  workflow_dispatch:
+name: iOS-ipa-build
+on: { workflow_dispatch: {} }
 
 jobs:
-  build:
-    runs-on: macos-latest
+  build-ios:
+    runs-on: macos-15   # ✅ Sonoma image that has Xcode 16
 
     steps:
-      - name: ⬇️ Checkout Repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: ⚙️ Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          architecture: x64
 
-      - name: 📦 Install Flutter packages
-        run: flutter pub get
+      - name: Select Xcode 16
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16'   # picks latest 16.x
 
-      - name: 🧹 Clean and fix symlinks
+      - run: flutter --suppress-analytics precache --ios
+      - run: flutter pub get
+
+      - name: Clean & reinstall Pods
         run: |
+          rm -rf ios/Pods ios/Podfile.lock ios/.symlinks
           flutter clean
           flutter pub get
+          cd ios && pod repo update && pod install && cd ..
 
-      - name: 📦 Install CocoaPods
-        run: |
-          rm -rf Pods Podfile.lock
-          pod install
-        working-directory: ios
-
-      - name: 🏗️ Build iOS (no signing)
-        run: flutter build ios --release --no-codesign
-
-      - name: 📦 Package IPA
-        run: |
-          mkdir Payload
-          mv Runner.app Payload
-          zip -r FlutterIpaExport.ipa Payload
-        working-directory: build/ios/iphoneos
-
-      - name: 📤 Upload to GitHub Release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/ios/iphoneos/FlutterIpaExport.ipa
-          tag: v1.0
-          overwrite: true
-          body: "iOS release with Firestore"
+      - run: flutter build ios --release --no-codesign
