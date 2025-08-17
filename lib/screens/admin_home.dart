@@ -1,5 +1,6 @@
 import 'package:adminpanelapp/screens/EditAndDeleteScreen.dart';
 import 'package:adminpanelapp/screens/AddPriceTab.dart';
+import 'package:adminpanelapp/screens/add_accessories.dart';
 import 'package:adminpanelapp/screens/add_card_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,7 +16,7 @@ class AdminHomeScreen extends StatelessWidget {
     const Color kSurface = Color(0xFFFDFEFF);
 
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         backgroundColor: kSurface,
         appBar: PreferredSize(
@@ -70,6 +71,7 @@ class AdminHomeScreen extends StatelessWidget {
                     Tab(text: "📱 Add Phone"),
                     Tab(text: "🗑 Delete Phone"),
                     Tab(text: "💰 Add Price"),
+                    Tab(text: "💰 Add Accessories"),
                   ],
                 ),
               ),
@@ -81,6 +83,7 @@ class AdminHomeScreen extends StatelessWidget {
             AddCardScreen(),
             EditAndDeleteScreen(),
             AddPriceTab(),
+            AddAccessoriesScreen(),
           ],
         ),
       ),
